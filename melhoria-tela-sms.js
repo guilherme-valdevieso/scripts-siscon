@@ -7,11 +7,21 @@
 // @match        https://siscon.benner.com.br/siscon/e/*olicitacoes/Consultar.aspx*
 // @grant        none
 // ==/UserScript==
+// ==UserScript==
+// @name         New Userscript
+// @namespace    http://tampermonkey.net/
+// @version      0.1
+// @description  try to take over the world!
+// @author       You
+// @match        https://siscon.benner.com.br/siscon/e/*olicitacoes/Consultar.aspx*
+// @grant        none
+// ==/UserScript==
 
 (function() {
     'use strict';
 
     var ScriptSiscon = {
+        quantidadeMaximaAceita: 4,
         removerColunaTabela: function(indiceColuna){
             $('thead th:nth-child('+indiceColuna+')').remove();
             $('tbody td:nth-child('+indiceColuna+')').remove();
@@ -19,14 +29,40 @@
         alterarSituacao: function(seletor, conteudo){
              $('td[title*="'+seletor+'"]').html(conteudo);
         },
-        inserirBadgeNoTitulo: function(descricao, seletor){
-            var quantidade = $(seletor).length;
+        incluirLabelSituacao : function(){
+            $('tbody > tr > td.text-center[title]').each(function(i,e){ $(e).append($(e).attr('title'));});
+        },
+        inserirBadgeNoTitulo: function(){
+            var arraySituacoes = [];
+
+            $('td.text-center[title]').each(function(index,value){
+                if(arraySituacoes[$(this).attr('title')] === undefined)
+                    arraySituacoes[$(this).attr('title')] = 0;
+
+                arraySituacoes[$(this).attr('title')] += 1;
+            });
             
-            if(quantidade <= 0) return;
-            
-            var html = $('#spanTitleCaption').html();
-            $('#spanTitleCaption').html(html + ' - ' + descricao + ' <span class="badge badge-primary"> '+ quantidade +' </span>');
-        }
+            for(var item in arraySituacoes){
+                $('.portlet-title > .caption').append(' - <span class="caption-helper">' + item + ' <span class="badge badge-primary"> '+ arraySituacoes[item] +' </span></span>');
+                
+                if(arraySituacoes[item] >= ScriptSiscon.quantidadeMaximaAceita)
+                    ScriptSiscon.notificar("ATENÇÃO:  SMS na situação "+item+ "("+arraySituacoes[item]+") estão acumulando, verifique!");
+            }
+        },
+         notificar: function(mensagem){
+             if (Notification.permission !== "granted")
+                 Notification.requestPermission();
+             else {
+                 var notification = new Notification('Siscon', {
+                     icon: 'http://www.freeiconspng.com/uploads/alert-icon-23.png',
+                     body: mensagem,
+                 });
+
+                 notification.onclick = function () {
+                     window.open("https://siscon.benner.com.br/siscon/e/solicitacoes/Consultar.aspx");      
+                 };
+             }
+         }
     };
     
     /* Removendo colunas desnecessárias */
@@ -35,14 +71,9 @@
     ScriptSiscon.removerColunaTabela(3);
     
     /* Alterando situações */
-    ScriptSiscon.alterarSituacao('código','<span style="color:red;" class="fa fa-eye"></span>Aguardando revisão de código');
-    ScriptSiscon.alterarSituacao('Aguardando análise','<span style="color:green;" class="fa fa-sticky-note-o"></span>Aguardando análise');
+    ScriptSiscon.incluirLabelSituacao();
+    ScriptSiscon.inserirBadgeNoTitulo();
     
-    /* Badges do título */
-    ScriptSiscon.inserirBadgeNoTitulo('Revisões de código', 'td[title*="código"]');
-    ScriptSiscon.inserirBadgeNoTitulo('Aguardando análise', 'td[title*="Aguardando análise"]');
-    ScriptSiscon.inserirBadgeNoTitulo('Programando', 'td[title*="Programando"]');
-    ScriptSiscon.inserirBadgeNoTitulo('Aguardando programação', 'td[title*="Aguardando programacao"]');
-    ScriptSiscon.inserirBadgeNoTitulo('Liberando artefatos/script', 'td[title*="Liberando"]');
     
+
 })();
