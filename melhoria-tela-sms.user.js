@@ -1,13 +1,4 @@
 // ==UserScript==
-// @name         Melhoria tela de SMS
-// @namespace    SISCON
-// @version      1.0
-// @description  Melhora a situação e arranca algumas colunas desnecessárias
-// @author       Guilherme Valdevieso
-// @match        https://siscon.benner.com.br/siscon/e/*olicitacoes/Consultar.aspx*
-// @grant        none
-// ==/UserScript==
-// ==UserScript==
 // @name         New Userscript
 // @namespace    http://tampermonkey.net/
 // @version      0.1
@@ -30,7 +21,7 @@
              $('td[title*="'+seletor+'"]').html(conteudo);
         },
         incluirLabelSituacao : function(){
-            $('tbody > tr > td.text-center[title]').each(function(i,e){ $(e).append($(e).attr('title'));});
+            $('tbody > tr > td.text-center[title]').each(function(i,e){ $(e).html($(e).attr('title'));});
         },
         inserirBadgeNoTitulo: function(){
             var arraySituacoes = [];
